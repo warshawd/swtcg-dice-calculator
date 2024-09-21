@@ -150,7 +150,7 @@ def constructMessage():
 	message = "Simulating an attack with " + str(args.power) + " power"
 	if args.crit > 0:
 		message += ", Critical Hit " + str(args.crit)
-	if args.accuracy > 0:
+	if args.accuracy != 0:
 		message += ", Accuracy " + str(args.accuracy)
 	if args.parry > 0:
 		message += ", Parry " + str(args.parry)
