@@ -1,5 +1,7 @@
 import random
 import argparse
+from collections import Counter
+import matplotlib.pyplot as plt
 
 numTrials = 10**6
 parser = argparse.ArgumentParser()
@@ -13,6 +15,59 @@ parser.add_argument("-dl", "--dlucky", help="Defender Lucky", type=int, default=
 parser.add_argument("-s", "--strategy", help="Lucky Strategy", default="default")
 parser.add_argument("-o", "--order", help="Lucky Order", default="a")
 args = parser.parse_args()
+
+def probAtLeast(dist, x):
+	return sum(dist[k] for k in dist if k >= x) / numTrials
+
+
+def cumulativeTable(dist):
+	table = {}
+	for k in sorted(dist):
+		table[k] = probAtLeast(dist, k)
+	return table
+
+def cdfAtLeast(dist):
+	cdf = {}
+	for k in sorted(dist):
+		cdf[k] = sum(dist[x] for x in dist if x >= k) / numTrials
+	return cdf
+
+def pmf(dist):
+	return {k: v / numTrials for k, v in dist.items()}
+
+def expectedValue(dist):
+	return sum(k * v for k, v in dist.items()) / numTrials
+
+def plotDamagePmf(damageDist):
+	pmfDist = pmf(damageDist)
+
+	x = sorted(pmfDist.keys())
+	y = [pmfDist[k] for k in x]
+
+	plt.figure()
+	plt.bar(x, y)
+	plt.xlabel("Damage")
+	plt.ylabel("Probability")
+	plt.title("Damage Probability Mass Function")
+	plt.grid(axis="y", alpha=0.3)
+	plt.savefig("damage_pmf.png")
+	plt.close()
+
+def plotDamageCdf(damageDist):
+	cdfDist = cdfAtLeast(damageDist)
+
+	x = sorted(cdfDist.keys())
+	y = [cdfDist[k] for k in x]
+
+	plt.figure()
+	plt.step(x, y, where="post")
+	plt.xlabel("Damage Threshold (≥ X)")
+	plt.ylabel("Probability")
+	plt.title("Cumulative Probability of Dealing At Least X Damage")
+	plt.ylim(0, 1)
+	plt.grid(True, alpha=0.3)
+	plt.savefig("damage_cdf.png")
+	plt.close()
 
 def attackerLucky(power, thaco, aLucky, luckyStrategy, hits, misses, numCrits, numParries):
 	if aLucky > 0:
@@ -121,15 +176,21 @@ def doTrial(power, thaco, fury, aLucky, dLucky, luckyStrategy, order):
 
 
 def runSimulation(power, criticalHit = 0, accuracy = 0, parry = 0, fury = 0, aLucky = 0, dLucky = 0, luckyStrategy = "default", order = "a"):
+
 	trial = 0
+	thaco = 4 - accuracy
+
 	totalDamage = 0
 	totalHits = 0
 	totalCrits = 0
 	totalParries = 0
-	thaco = 4 - accuracy
+
+	damageDist = Counter()
+	hitsDist = Counter()
+
 	while trial < numTrials:
 		hits, numCrits, numParries = doTrial(power, thaco, fury, aLucky, dLucky, luckyStrategy, order)
-		# Compute final damage
+
 		damage = hits
 		if numCrits > 0:
 			damage += criticalHit
@@ -139,12 +200,17 @@ def runSimulation(power, criticalHit = 0, accuracy = 0, parry = 0, fury = 0, aLu
 			totalParries += 1
 		if damage < 0:
 			damage = 0
+
 		totalDamage += damage
 		totalHits += hits
 
+		damageDist[damage] += 1
+		hitsDist[hits] += 1
+
 		trial += 1
 
-	return totalDamage/numTrials, totalHits/numTrials, totalCrits/numTrials, totalParries/numTrials
+	print(damageDist)
+	return totalDamage / numTrials, totalHits / numTrials, totalCrits / numTrials, totalParries / numTrials, damageDist, hitsDist
 
 def constructMessage():
 	message = "Simulating an attack with " + str(args.power) + " power"
@@ -171,12 +237,24 @@ def constructMessage():
 
 def main():
 	print(constructMessage())
-	averageDamage, averageHits, averageCrits, averageParries = runSimulation(args.power, args.crit, args.accuracy, args.parry, args.fury, args.alucky, args.dlucky, args.strategy, args.order)
+
+	(averageDamage, averageHits,
+	averageCrits, averageParries,
+	damageDist, hitsDist) = runSimulation(
+		args.power, args.crit, args.accuracy, args.parry,
+		args.fury, args.alucky, args.dlucky,
+		args.strategy, args.order
+	)
+
 	print("Average damage is " + str(averageDamage))
 	print("Average number of hits is " + str(averageHits))
+
 	if args.crit > 0:
-		print("Critical Hit was hit " + str(averageCrits*100) + "% of the time")
+		print("Critical Hit was hit " + str(averageCrits * 100) + "% of the time")
 	if args.parry > 0:
-		print("Parry was hit " + str(averageParries*100) + "% of the time")
+		print("Parry was hit " + str(averageParries * 100) + "% of the time")
+
+	# plotDamagePmf(damageDist)
+	plotDamageCdf(damageDist)
 
 main()
