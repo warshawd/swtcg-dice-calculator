@@ -87,7 +87,7 @@ def attackerLucky(power, thaco, aLucky, luckyStrategy, hits, misses, numCrits, n
 		# We reroll hits too (to crit-fish)
 		else:
 			toReroll = min(power, aLucky)
-			hits -= (aLucky - misses)
+			hits = max(0, hits - (aLucky - misses))
 			misses = 0
 		reroll = 0
 		while reroll < toReroll:
@@ -124,7 +124,7 @@ def defenderLucky(power, thaco, dLucky, luckyStrategy, hits, misses, numCrits, n
 		# We reroll misses too (to fish for parry)
 		else:
 			toReroll = min(power, dLucky)
-			misses -= (aLucky - hits)
+			misses = max(0, misses - (dLucky - hits))
 			hits = 0
 		reroll = 0
 		while reroll < toReroll:

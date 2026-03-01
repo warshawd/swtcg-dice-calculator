@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWTCG Dice Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <h1>SWTCG Dice Calculator</h1>
+
+        <div class="controls">
+            <fieldset class="attacker-settings">
+                <legend>Attacker</legend>
+                <div class="field">
+                    <span class="field-label">Power</span>
+                    <div class="stepper">
+                        <button type="button" class="stepper-btn minus">−</button>
+                        <input type="number" id="power" value="5" min="1">
+                        <button type="button" class="stepper-btn plus">+</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <span class="field-label">Accuracy</span>
+                    <div class="stepper">
+                        <button type="button" class="stepper-btn minus">−</button>
+                        <input type="number" id="accuracy" value="0">
+                        <button type="button" class="stepper-btn plus">+</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <span class="field-label">Crit</span>
+                    <div class="stepper">
+                        <button type="button" class="stepper-btn minus">−</button>
+                        <input type="number" id="crit" value="0">
+                        <button type="button" class="stepper-btn plus">+</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <span class="field-label">Fury</span>
+                    <div class="stepper">
+                        <button type="button" class="stepper-btn minus">−</button>
+                        <input type="number" id="fury" value="0" min="0">
+                        <button type="button" class="stepper-btn plus">+</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <span class="field-label">Attacker Lucky</span>
+                    <div class="stepper">
+                        <button type="button" class="stepper-btn minus">−</button>
+                        <input type="number" id="aLucky" value="0" min="0">
+                        <button type="button" class="stepper-btn plus">+</button>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="defender-settings">
+                <legend>Defender</legend>
+                <div class="defender-row">
+                    <div class="field">
+                        <span class="field-label">Armor</span>
+                        <input type="checkbox" id="armor" class="armor-checkbox">
+                    </div>
+                    <div class="field">
+                        <span class="field-label">Shields</span>
+                        <div class="stepper">
+                            <button type="button" class="stepper-btn minus">−</button>
+                            <input type="number" id="shields" value="0" min="0">
+                            <button type="button" class="stepper-btn plus">+</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <span class="field-label">Parry</span>
+                        <div class="stepper">
+                            <button type="button" class="stepper-btn minus">−</button>
+                            <input type="number" id="parry" value="0">
+                            <button type="button" class="stepper-btn plus">+</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <span class="field-label">Defender Lucky</span>
+                        <div class="stepper">
+                            <button type="button" class="stepper-btn minus">−</button>
+                            <input type="number" id="dLucky" value="0" min="0">
+                            <button type="button" class="stepper-btn plus">+</button>
+                        </div>
+                    </div>
+                    <div class="lucky-order-container">
+                        <span>Lucky Order:</span>
+                        <div class="lucky-order-buttons">
+                            <label class="toggle-btn">
+                                <input type="radio" name="luckyOrder" value="a" checked>
+                                Attacker First
+                            </label>
+                            <label class="toggle-btn">
+                                <input type="radio" name="luckyOrder" value="d">
+                                Defender First
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="action-buttons">
+                <legend>Actions</legend>
+                <div class="field">
+                    <span class="field-label">Attack Name (optional)</span>
+                    <input type="text" id="attackName" placeholder="Attack 1">
+                </div>
+                <button id="addLine">CALCULATE</button>
+                <button id="clearGraph">Clear Graph</button>
+            </fieldset>
+        </div>
+
+        <div id="cdfGraph"></div>
+
+        <div class="combine-container">
+            <div id="combineCheckboxes"></div>
+            <div class="combine-buttons">
+                <button id="combineLines">Combine Selected</button>
+                <button id="selectAll">Select All</button>
+                <button id="clearAll">Clear All</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.plot.ly/plotly-2.29.1.min.js"></script>
+    <script type="module" src="swtcgapp.js"></script>
+</body>
+</html>
