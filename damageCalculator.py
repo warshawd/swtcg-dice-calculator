@@ -69,75 +69,73 @@ def plotDamageCdf(damageDist):
 	plt.savefig("damage_cdf.png")
 	plt.close()
 
-def attackerLucky(power, thaco, aLucky, luckyStrategy, hits, misses, numCrits, numParries):
-	if aLucky > 0:
-		# We have enough lucky to potentially reset the parry
-		if aLucky >= numParries:
-			numParries = 0
-		else:
-			numParries -= aLucky
-		# Full lucky value (at least as many misses as lucky)
-		if aLucky <= misses:
-			misses -= aLucky
-			toReroll = aLucky
-		# We reroll all available misses
-		elif luckyStrategy == "default" or numCrits > 0:
-			toReroll = misses
-			misses = 0
-		# We reroll hits too (to crit-fish)
-		else:
-			toReroll = min(power, aLucky)
-			hits = max(0, hits - (aLucky - misses))
-			misses = 0
-		reroll = 0
-		while reroll < toReroll:
-			dice = random.randint(1, 6)
-			if dice >= thaco:
-				hits += 1
-			else:
-				misses += 1
-			if dice == 1:
-				numParries += 1
-			elif dice == 6:
-				numCrits += 1
-			reroll += 1
+def rollDie(thaco, hits, misses, numCrits, numParries):
+	dice = random.randint(1, 6)
+	if dice >= thaco:
+		hits += 1
+	else:
+		misses += 1
+	if dice == 1:
+		numParries += 1
+	elif dice == 6:
+		numCrits += 1
+	return hits, misses, numCrits, numParries
+
+
+def attackerLucky(thaco, aLucky, luckyStrategy, hits, misses, numCrits, numParries):
+	if aLucky <= 0:
+		return hits, misses, numCrits, numParries
+
+	# Aggressive: fish for crits by rerolling non-crit hits.
+	# Only worth doing if no crit yet (Critical Hit X only triggers once).
+	useAggressive = luckyStrategy == "aggressive" and numCrits == 0
+
+	# Always reroll parry dice (1s) first, regardless of whether they're hits or misses.
+	# Pull from misses first (the normal case), then hits (high accuracy case).
+	parryRerolls = min(aLucky, numParries)
+	parryFromMisses = min(parryRerolls, misses)
+	parryFromHits = parryRerolls - parryFromMisses
+	misses -= parryFromMisses
+	hits -= parryFromHits
+	numParries -= parryRerolls
+
+	# With remaining Lucky: reroll non-crit hits (aggressive) or misses (default)
+	remaining = aLucky - parryRerolls
+	if useAggressive:
+		nonCritHits = max(0, hits - numCrits)
+		extraRerolls = min(remaining, nonCritHits)
+		hits -= extraRerolls
+	else:
+		extraRerolls = min(remaining, misses)
+		misses -= extraRerolls
+
+	for _ in range(parryRerolls + extraRerolls):
+		hits, misses, numCrits, numParries = rollDie(thaco, hits, misses, numCrits, numParries)
 	return hits, misses, numCrits, numParries
 
 
 
 
-def defenderLucky(power, thaco, dLucky, luckyStrategy, hits, misses, numCrits, numParries):
-	if dLucky > 0:
-		# We have enough lucky to potentially reset the crit
-		if dLucky >= numCrits:
-			numCrits = 0
-		else:
-			numCrits -= dLucky
-		# Full lucky value (at least as many hits as lucky)
-		if dLucky <= hits:
-			hits -= dLucky
-			toReroll = dLucky
-		# We reroll all available hits
-		elif luckyStrategy == "default" or numParries > 0:
-			toReroll = hits
-			hits = 0
-		# We reroll misses too (to fish for parry)
-		else:
-			toReroll = min(power, dLucky)
-			misses = max(0, misses - (dLucky - hits))
-			hits = 0
-		reroll = 0
-		while reroll < toReroll:
-			dice = random.randint(1, 6)
-			if dice >= thaco:
-				hits += 1
-			else:
-				misses += 1
-			if dice == 1:
-				numParries += 1
-			elif dice == 6:
-				numCrits += 1
-			reroll += 1
+def defenderLucky(thaco, dLucky, luckyStrategy, hits, misses, numCrits, numParries):
+	if dLucky <= 0:
+		return hits, misses, numCrits, numParries
+
+	# Always reroll crit dice (6s) first, regardless of whether they're hits or misses.
+	# Pull from hits first (the normal case), then misses (extreme negative accuracy case).
+	critRerolls = min(dLucky, numCrits)
+	critFromHits = min(critRerolls, hits)
+	critFromMisses = critRerolls - critFromHits
+	hits -= critFromHits
+	misses -= critFromMisses
+	numCrits -= critRerolls
+
+	# With remaining Lucky: reroll hits
+	remaining = dLucky - critRerolls
+	hitRerolls = min(remaining, hits)
+	hits -= hitRerolls
+
+	for _ in range(critRerolls + hitRerolls):
+		hits, misses, numCrits, numParries = rollDie(thaco, hits, misses, numCrits, numParries)
 	return hits, misses, numCrits, numParries
 
 def doTrial(power, thaco, fury, aLucky, dLucky, luckyStrategy, order):
@@ -166,11 +164,11 @@ def doTrial(power, thaco, fury, aLucky, dLucky, luckyStrategy, order):
 		i += 1
 		# Deal with lucky values on either unit
 	if order == "a":
-		hits, misses, numCrits, numParries = attackerLucky(tempPower, thaco, aLucky, luckyStrategy, hits, misses, numCrits, numParries)
-		hits, misses, numCrits, numParries = defenderLucky(tempPower, thaco, dLucky, luckyStrategy, hits, misses, numCrits, numParries)
+		hits, misses, numCrits, numParries = attackerLucky(thaco, aLucky, luckyStrategy, hits, misses, numCrits, numParries)
+		hits, misses, numCrits, numParries = defenderLucky(thaco, dLucky, luckyStrategy, hits, misses, numCrits, numParries)
 	else:
-		hits, misses, numCrits, numParries = defenderLucky(tempPower, thaco, dLucky, luckyStrategy, hits, misses, numCrits, numParries)
-		hits, misses, numCrits, numParries = attackerLucky(tempPower, thaco, aLucky, luckyStrategy, hits, misses, numCrits, numParries)
+		hits, misses, numCrits, numParries = defenderLucky(thaco, dLucky, luckyStrategy, hits, misses, numCrits, numParries)
+		hits, misses, numCrits, numParries = attackerLucky(thaco, aLucky, luckyStrategy, hits, misses, numCrits, numParries)
 	return hits, numCrits, numParries
 
 
