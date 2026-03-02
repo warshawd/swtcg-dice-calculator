@@ -176,6 +176,7 @@ function getInputs() {
         aLucky: Number(document.getElementById('aLucky').value),
         dLucky: Number(document.getElementById('dLucky').value),
         luckyOrder: document.querySelector('input[name="luckyOrder"]:checked').value,
+        luckyStrategy: "default",
         shields: Number(document.getElementById('shields').value),
         armor: document.getElementById('armor').checked,
         attackName: document.getElementById('attackName').value.trim()
