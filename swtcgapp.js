@@ -97,7 +97,7 @@ function plotCdfs() {
         t.x = x;
         t.y = y;
         t.mode = 'lines+markers';
-        t.line = { shape: 'spline', smoothing: 0.8, width: 2.5, color };
+        t.line = { shape: 'spline', smoothing: 0.3, width: 2.5, color };
         t.marker = {
             size: 20,
             symbol: 'circle',
@@ -251,6 +251,31 @@ function clearGraph() {
 }
 
 
+function loadFromParams() {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.size) return false;
+
+    const numericFields = ['power', 'accuracy', 'crit', 'parry', 'fury', 'aLucky', 'dLucky', 'shields'];
+    numericFields.forEach(id => {
+        if (params.has(id)) document.getElementById(id).value = params.get(id);
+    });
+
+    if (params.has('luckyOrder')) {
+        const radio = document.querySelector(`input[name="luckyOrder"][value="${params.get('luckyOrder')}"]`);
+        if (radio) radio.checked = true;
+    }
+
+    if (params.has('armor')) {
+        document.getElementById('armor').checked = params.get('armor') === '1';
+    }
+
+    if (params.has('name')) {
+        document.getElementById('attackName').value = params.get('name');
+    }
+
+    return true;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('addLine').addEventListener('click', addLine);
     document.getElementById('clearGraph').addEventListener('click', clearGraph);
@@ -281,5 +306,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    if (loadFromParams()) addLine();
     updateCombineCheckboxes();
 });
