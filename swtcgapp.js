@@ -97,7 +97,7 @@ function plotCdfs() {
         t.x = x;
         t.y = y;
         t.mode = 'lines+markers';
-        t.line = { shape: 'spline', smoothing: 0.8, width: 2.5, color };
+        t.line = { shape: 'linear', width: 2.5, color };
         t.marker = {
             size: 20,
             symbol: 'circle',
