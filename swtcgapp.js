@@ -251,6 +251,31 @@ function clearGraph() {
 }
 
 
+function loadFromParams() {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.size) return false;
+
+    const numericFields = ['power', 'accuracy', 'crit', 'parry', 'fury', 'aLucky', 'dLucky', 'shields'];
+    numericFields.forEach(id => {
+        if (params.has(id)) document.getElementById(id).value = params.get(id);
+    });
+
+    if (params.has('luckyOrder')) {
+        const radio = document.querySelector(`input[name="luckyOrder"][value="${params.get('luckyOrder')}"]`);
+        if (radio) radio.checked = true;
+    }
+
+    if (params.has('armor')) {
+        document.getElementById('armor').checked = params.get('armor') === '1';
+    }
+
+    if (params.has('name')) {
+        document.getElementById('attackName').value = params.get('name');
+    }
+
+    return true;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('addLine').addEventListener('click', addLine);
     document.getElementById('clearGraph').addEventListener('click', clearGraph);
@@ -281,5 +306,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    if (loadFromParams()) addLine();
     updateCombineCheckboxes();
 });
