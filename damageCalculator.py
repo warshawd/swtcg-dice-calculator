@@ -54,14 +54,13 @@ def plotDamageCdf(damageDist, numTrials):
 	plt.savefig("damage_cdf.png")
 	plt.close()
 
-def generatePlotBuffer(damageDist, title="Attack"):
+def generatePlotBuffer(damageDist, title="Attack", subtitle=None, color='#4a9eff'):
 	"""Generate a damage CDF chart matching the web app style and return it as
 	an in-memory PNG buffer. Uses Plotly + kaleido for rendering.
 	"""
 	import plotly.graph_objects as go
 	import plotly.io as pio
 
-	color = '#4a9eff'  # PALETTE[0] from swtcgapp.js
 	r, g, b = int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
 	fillcolor = f'rgba({r},{g},{b},0.12)'
 
@@ -90,9 +89,13 @@ def generatePlotBuffer(damageDist, title="Attack"):
 		hovertemplate='<b>Damage ≥ %{x}</b><br>Probability: %{y:.0%}<extra></extra>'
 	)
 
+	title_text = title
+	if subtitle:
+		title_text += f"<br><sup>{subtitle}</sup>"
+
 	layout = go.Layout(
-		title=dict(text=title, x=0.5, xanchor='center'),
-		margin=dict(t=70, l=60, r=40, b=60),
+		title=dict(text=title_text, x=0.5, xanchor='center'),
+		margin=dict(t=90, l=60, r=40, b=60),
 		xaxis=dict(
 			title='Damage Threshold (≥ X)',
 			range=[0.5, maxDamage + 0.5],
