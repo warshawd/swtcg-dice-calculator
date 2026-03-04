@@ -86,7 +86,7 @@ def generatePlotBuffer(damageDist, title="Attack", subtitle=None, color='#4a9eff
 		x=x, y=y,
 		name=title,
 		mode='lines+markers',
-		line=dict(shape='linear', width=2.5, color=color),
+		line=dict(shape='spline', smoothing=0.3, width=2.5, color=color),
 		marker=dict(size=20, symbol='circle', color=color,
 		            line=dict(width=1, color='#fff')),
 		fill='tozeroy',
