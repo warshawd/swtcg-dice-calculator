@@ -9,9 +9,14 @@ def probAtLeast(dist, x, numTrials):
 
 
 def cdfAtLeast(dist, numTrials):
+	if not dist:
+		return {}
+	maxK = max(dist.keys())
 	cdf = {}
-	for k in sorted(dist):
-		cdf[k] = sum(dist[x] for x in dist if x >= k) / numTrials
+	running = 0
+	for k in range(maxK, -1, -1):
+		running += dist.get(k, 0)
+		cdf[k] = running / numTrials
 	return cdf
 
 def pmf(dist, numTrials):
