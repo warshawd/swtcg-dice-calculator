@@ -124,7 +124,7 @@ function plotCdfs() {
             : { t: 70, l: 60, r: 280, b: 60 },
         xaxis: {
             title: 'Damage Threshold (≥ X)',
-            range: [0.5, globalMaxDamage + 0.5],
+            range: [0.85, globalMaxDamage + 0.5],
             autorange: false,
             dtick: 1,
             automargin: true
